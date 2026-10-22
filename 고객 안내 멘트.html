@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEMS 통합 즉시 확인 대시보드</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --accent: #2b6cb0;
+            --border: #e2e8f0;
+            --result-bg: #f7fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 1440px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 35px;
+            color: #1a202c;
+        }
+
+        .menu-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .static-card {
+            background: #fdfdfd;
+            border: 1px solid #cbd5e0;
+        }
+
+        .card-header {
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #1a202c;
+        }
+
+        .card-title.blue-title {
+            color: var(--accent);
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .section-divider {
+            grid-column: 1 / -1;
+            border: 0;
+            height: 3px;
+            background: #a0aec0;
+            margin: 25px 0 10px 0;
+            border-radius: 2px;
+        }
+
+        .inline-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .inline-textarea {
+            width: 100%;
+            height: 90px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.2s;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .inline-textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .inline-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .inline-btn:hover {
+            background: #1a4373;
+        }
+
+        .copy-btn-sm {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .copy-btn-sm:hover {
+            background: #2d3748;
+        }
+
+        .copy-btn {
+            background: #4a5568;
+        }
+        .copy-btn:hover {
+            background: #2d3748;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            background: var(--result-bg);
+            padding: 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-line;
+            display: none;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--accent);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .static-text-box {
+            background: var(--result-bg);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre-line;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--accent);
+            height: 52px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 1100px) {
+            .menu-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 750px) {
+            .menu-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <h1>GEMS 즉시 확인 대시보드</h1>
+        
+        <div class="menu-container">
+
+            <!-- [상단 고정 안내 레이어] -->
+            <div class="menu-card static-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title blue-title">💬 초기상담</div>
+                    </div>
+                    <div id="text-first-consult" class="static-text-box">안녕하세요 고객님, 캐나다쉬핑을 찾아주셔서 감사합니다! 😊
+저희는 빠르고 안전한 **[항공 택배]**와 짐이 많을 때 유용한 [선박 택배] 두 가지 서비스를 제공하고 있습니다.
+
+✈️ 항공: 발송 후 약 5~7일 정도 소요됩니다.
+🚢 선박: 발송 후 약 6~8주 정도 소요되며, 한국으로 귀국하시는 '귀국자 전용' 서비스입니다.
+
+고객님 상황에 꼭 맞는 1:1 상담을 위해 아래 두 가지를 남겨주세요! 👇
+1. 출발 도시와 도착 도시 (예: 캘거리 ➡️ 부산)
+2. 보내시는 짐의 종류와 양(예: 우체국5호 박스 2개, 이민가방 3개, 쇼파 등 가구)
+
+확인 후 신속하게 안내해 드리겠습니다. 💬
+
+💻 또는 저희 홈페이지 방문해 주시면 견적 및 주의사항 확인 가능합니다.
+🔗 https://www.coship.ca/ko</div>
+                </div>
+                <div class="btn-wrapper" style="margin-top: 10px;">
+                    <button class="copy-btn-sm" onclick="copyText('text-first-consult')">문구 복사</button>
+                </div>
+            </div>
+
+            <div class="menu-card static-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title blue-title">📦 선박택배 면세요건 안내</div>
+                    </div>
+                    <div id="text-shipping-rules" class="static-text-box">안녕하세요 고객님, 캐나다쉬핑입니다! 🍁
+저희 선박 택배에 문의해 주셔서 진심으로 감사합니다.
+선박 택배는 일반 택배가 아닌 **'한국 귀국 이사 화물'**로 분류되기 때문에, 세관 통관을 위해 아래 4가지 자격 요건을 꼭 충족해 주셔야 합니다. 🚢
+
+1️⃣ **한국 귀국 필수 (입국일 기준)**
+고객님께서 한국에 먼저 입국하신 후에 짐이 세관에 도착해야 합니다. (나중에 통관 시 '출입국사실증명서'를 제출하셔야 해요!)
+
+2️⃣ **캐나다 합법적 체류 기간**
+- 1년 이상 거주: 면세 적용 ⭕
+- 3개월 ~ 1년 미만 거주: 사유서 및 단기 체류 증빙 서류 제출 필수 (세관원 심사 후 승인)
+*(최소 3개월 이상 체류하셨어야 진행이 가능합니다.)*
+
+3️⃣ **최소 발송 수량**
+짐의 양이 20kg 기준 박스로 최소 2개 이상일 때부터 이용하실 수 있습니다. 📦📦
+
+4️⃣ **영주권/시민권자 유의사항**
+영주권자나 시민권자이신 경우, 세관에서 '한국에 1년 이상 거주할 것임을 증명하는 서류'를 추가로 요청할 수 있습니다.
+
+위 안내해 드린 요건에 해당하시는지 확인 부탁드렸으며, 진행을 원하시거나 더 궁금한 점이 있다면 언제든 편하게 메시지 남겨주세요! 😊</div>
+                </div>
+                <div class="btn-wrapper" style="margin-top: 10px;">
+                    <button class="copy-btn-sm" onclick="copyText('text-shipping-rules')">문구 복사</button>
+                </div>
+            </div>
+
+            <div class="menu-card static-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title blue-title">✈️ 항공 택배 안내 및 주의사항</div>
+                    </div>
+                    <div id="text-air-rules" class="static-text-box">✈️ [캐나다쉬핑 항공 택배 안내 및 주의사항]
+안녕하세요 고객님, 원활한 항공 배송을 위해 아래 내용을 꼭 확인해 주세요! 😊
+
+💰 1. 예상 요금 확인
+저희 홈페이지에서 부피와 무게를 입력하시면 바로 확인 가능합니다.
+🔗 요금 계산기: https://www.coship.ca/courier-ca-to-kr
+
+⏱️ 2. 배송 소요 기간
+평균 5~7일 정도 소요됩니다.
+단, 세관 통관 지연(검사/검역 등)이나 한국 내 택배사 사정에 따라 추가 지연이 발생할 수 있습니다.
+
+💵 3. 면세 한도 및 세금(관부가세) 안내
+발송하시는 물품 가액의 총합이 USD $150 이하일 때 면세 통관이 가능합니다.
+$150을 초과할 경우 세금이 발생하며, 세액은 세관의 판단에 따라 결정되므로 당사에서 미리 안내해 드리기 어렵습니다.
+$150 이하로 신고하셔도, 세관원이 물품 가치를 더 높게 판단할 경우 증빙 서류 요구 및 세금/과태료가 발생할 수 있으니 솔직하고 정확하게 기재해 주시길 당부드립니다.</div>
+                </div>
+                <div class="btn-wrapper" style="margin-top: 10px;">
+                    <button class="copy-btn-sm" onclick="copyText('text-air-rules')">문구 복사</button>
+                </div>
+            </div>
+
+            <!-- 하단 조회 영역 구분 선 -->
+            <hr class="section-divider">
+
+            <!-- [하단 자동 입력 및 조회 레이어] -->
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">🚢 선박 정보확인</div>
+                        <div class="card-desc">Last name, First name, 이메일</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-ship-check" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-ship-check" onclick="copyText('result-ship-check')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="checkShipInfo()">조회</button>
+                    </div>
+                    <div id="result-ship-check" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">🚚 타주 인바운드 배송전 안내</div>
+                        <div class="card-desc">이름, 수량, 주소, 연락처, 이메일</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-inbound" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-inbound" onclick="copyText('result-inbound')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="searchInbound()">조회</button>
+                    </div>
+                    <div id="result-inbound" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">✈️ 타주 ➔ 한국 항공택배 안내</div>
+                        <div class="card-desc">이름, 지역, 초기 / 이름, 지역, 무게, 금액</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-air" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-air" onclick="copyText('result-air')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="searchAir()">조회</button>
+                    </div>
+                    <div id="result-air" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">📍 접수처 안내</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-reception" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-reception" onclick="copyText('result-reception')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="searchReception()">조회</button>
+                    </div>
+                    <div id="result-reception" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">🤖 가격 안내 봇</div>
+                        <div class="card-desc">고객명, 실무게/부피무게, 최종금액, BL번호(선택)</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-price" class="inline-textarea" placeholder=></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-price" onclick="copyText('result-price')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="calculatePrice()">조회</button>
+                    </div>
+                    <div id="result-price" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">🔍 화물 배송 조회 안내</div>
+                        <div class="card-desc">송화인명, 수취인명, 운송장번호</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-tracking" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-tracking" onclick="copyText('result-tracking')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="generateTrackingInfo()">조회</button>
+                    </div>
+                    <div id="result-tracking" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">💳 결제 방법 안내</div>
+                        <div class="card-desc">일반, 이트랜, 한국계좌</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-payment" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-payment" onclick="copyText('result-payment')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="generatePaymentInfo()">조회</button>
+                    </div>
+                    <div id="result-payment" class="result-box"></div>
+                </div>
+            </div>
+
+            <!-- 선박 배송 단계 안내 카드 -->
+            <div class="menu-card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">🚢 선박 배송 단계 안내</div>
+                        <div class="card-desc">이름, 선적대기 / 이동중 / 한국도착</div>
+                    </div>
+                    <div class="inline-input-group">
+                        <textarea id="input-ship-stage" class="inline-textarea"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-wrapper" style="margin-top: 15px;">
+                        <button class="inline-btn copy-btn" id="btn-copy-ship-stage" onclick="copyText('result-ship-stage')" style="display:none;">문구 복사</button>
+                        <button class="inline-btn" onclick="generateShipStageInfo()">조회</button>
+                    </div>
+                    <div id="result-ship-stage" class="result-box"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const dbReception = [
+            { name: "우밴유 (다운타운)", type: "항공/선박 모두 가능", address: "4F-609 W. Hastings St.", time: "월~금 9AM ~ 5PM", tags: ["다운타운", "downtown", "밴쿠버", "vancouver"] },
+            { name: "밴브릿지 유학원 (다운타운)", type: "항공/선박 모두 가능", address: "710-890 W Pender St.", time: "월~금 11AM ~ 5PM", tags: ["다운타운", "downtown", "밴쿠버", "vancouver"] },
+            { name: "UPS STORE (다운타운)", type: "항공 택배만 가능", address: "1290 Howe St.", time: "월~금 9AM ~ 5PM, 토 10AM ~ 3PM", tags: ["다운타운", "downtown", "밴쿠버"] },
+            { name: "캐나다쉬핑 택배방 (버나비/로히드)", type: "항공 택배만 가능", address: "#205 - Suite 219, 4501 North Road (로히드 한남마트 상가 2층)", time: "월~토 10AM ~ 4:30PM (수요일 휴무)", tags: ["버나비", "burnaby", "로히드", "lougheed"] },
+            { name: "마켓리본 버나비 (메트로타운)", type: "항공 택배만 가능", address: "5593 Kingsway", time: "매일 9:30AM ~ 5PM", tags: ["버나비", "burnaby", "메트로타운", "metrotown"] },
+            { name: "마켓리본 코퀴틀람", type: "항공 택배만 가능", address: "1175 Johnson St.", time: "매일 9:30AM ~ 5PM", tags: ["코퀴틀람", "coquitlam"] },
+            { name: "The Newsroom (밴쿠버 케리스데일)", type: "항공 택배만 가능", address: "2256 W 41st Ave.", time: "매일 9AM ~ 6PM", tags: ["케리스데일", "kerrisdale", "밴쿠버"] },
+            { name: "써리 한남마트 (길포드)", type: "항공 택배만 가능", address: "15357 104 Ave.", time: "매일 9:30AM ~ 8PM", tags: ["써리", "surrey", "길포드", "guilford"] },
+            { name: "랭리 한남마트", type: "항공 택배만 가능", address: "6350 196 St.", time: "매일 9:30AM ~ 8PM", tags: ["랭리", "langley"] },
+            { name: "랭리 길포드 한의원", type: "항공 택배만 가능", address: "4-8790 204 St.", time: "월~토 10:30AM~4:30PM", tags: ["랭리", "langley"] },
+            { name: "나르샤 키친웨어 (리치몬드)", type: "항공 택배만 가능", address: "135-4940 No. 3 Rd.", time: "월~토 10AM ~ 4PM", tags: ["리치몬드", "richmond"] },
+            { name: "ABC ACADEMIC BOOKS (UBC)", type: "항공 택배만 가능", address: "2083 Alma St #210", time: "월~토 10:30AM ~ 6PM", tags: ["ubc", "유비씨", "점라", "alma"] }
+        ];
+
+        function searchReception() {
+            const val = document.getElementById('input-reception').value.trim().toLowerCase();
+            const resBox = document.getElementById('result-reception');
+            const copyBtn = document.getElementById('btn-copy-reception');
+            if(!val) return;
+
+            let template = `안녕하세요 고객님, 캐나다쉬핑입니다. 🍁
+고객님께서 계신 곳에서 이용하시기 편한 접수처를 안내해 드립니다.
+
+⭐ **[캐나다쉬핑 직영 접수처] (기본 안내)**
+📍 **캐나다쉬핑 본사 (항공/선박 모두 가능)**
+🏢 주소: 1501 Hartley Ave. (Coquitlam)
+🕒 영업시간: Wol~Geum 8AM ~ 5PM
+
+📍 **캐나다쉬핑 택배방 (항공 택배만 가능)**
+🏢 주소: #205 - Suite 219, 4501 North Road (로히드 한남마트 상가 2층)
+🕒 영업시간: 월~토 10AM ~ 4:30PM (수요일 휴무)
+
+👇 **[고객님 위치 기준 가장 가까운 추천 접수처]**`;
+
+            let recommendations = "";
+            let matchCount = 0;
+
+            dbReception.forEach(place => {
+                if(place.name.includes("본사")) return;
+                let isMatch = place.tags.some(tag => val.includes(tag) || tag.includes(val)) || 
+                              val.includes(place.name.split(" ")[0].toLowerCase()) ||
+                              place.address.toLowerCase().includes(val);
+                if(isMatch && matchCount < 3) {
+                    recommendations += `\n📍 **${place.name} (${place.type})**\n🏢 주소: ${place.address}\n🕒 영업시간: ${place.time}\n`;
+                    matchCount++;
+                }
+            });
+
+            if(matchCount === 0) {
+                template = `안녕하세요 고객님, 캐나다쉬핑입니다. 🍁
+요청하신 지역 주변의 특정 대행처가 조회되지 않아, 지도상 접근 및 연계가 가장 용이한 **가까운 주요 거점 및 직영 접수처**를 안내해 드립니다.
+
+📍 **캐나다쉬핑 본사 (항공/선박 모두 가능)**
+🏢 주소: 1501 Hartley Ave. (Coquitlam)
+🕒 영업시간: 월~금 8AM ~ 5PM
+
+📍 **캐나다쉬핑 택배방 (항공 택배만 가능)**
+🏢 주소: #205 - Suite 219, 4501 North Road (로히드 한남마트 상가 2층)
+🕒 영업시간: 월~토 10AM ~ 4:30PM (수요일 휴무)
+
+📍 **우밴유 (다운타운) (항공/선박 모두 가능)**
+🏢 주소: 4F-609 W. Hastings St.
+🕒 영업시간: 월~금 9AM ~ 5PM`;
+            } else {
+                template += recommendations;
+                template += `\n⚠️ 공휴일(Long weekend)이나 접수처 사정에 따라 영업시간이 변동될 수 있습니다. 방문 전 확인을 부탁드리며 조심히 오세요! 😊`;
+            }
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function searchInbound() {
+            const val = document.getElementById('input-inbound').value.trim();
+            const resBox = document.getElementById('result-inbound');
+            const copyBtn = document.getElementById('btn-copy-inbound');
+            if(!val) return;
+
+            const items = val.split(',').map(item => item.trim());
+            let name = items[0] ? items[0] : "[이름]";
+            let quantity = items[1] ? items[1].replace(/[^0-9]/g, "") : "[수량]";
+            let address = items[2] ? items[2] : "[주소]";
+            let phone = items[3] ? items[3] : "[연락처]";
+            let email = items[4] ? items[4] : "[이메일]";
+
+            let template = `안녕하세요 ${name} 고객님, 캐나다쉬핑 밴쿠버 본사입니다. 🍁
+한국에서 보내신 소중한 짐이 무사히 세관 통관을 마치고, 배송(UPS)을 위해 대기 중입니다! 📦
+
+발송 전, 배송지 정보가 정확한지 마지막으로 한 번 더 확인 부탁드립니다.
+
+📋 **[배송지 정보 확인]**
+👤 수취인명 : ${name}
+📦 총 수량 : ${quantity}개
+🏠 주 소 : ${address} 
+*(👆 우편번호/Postal Code가 정확한지 꼭! 더블체크 부탁드립니다)*
+📞 연락처 : ${phone}
+✉️ 이메일 : ${email}
+
+🚨 **아파트/콘도 거주 시 필수 확인** 🚨
+버저 넘버(Buzzer No.)나 기타 UPS 기사님이 배송 시 참고해야 할 특이사항이 있다면 지금 바로 회신해 남겨주세요!
+
+🚚 **[UPS 현지 배송 유의사항 - 꼭 읽어주세요!]**
+저희가 아닌 현지 UPS 기사님이 직접 배송을 진행하며, 한국과 배송 시스템이 달라 아래 내용을 꼭 참고해 주셔야 합니다.
+
+1️⃣ **트래킹 조회:** 운송장 번호가 생성되면 적어주신 이메일로 자동 발송됩니다. 
+🔗 실시간 조회 링크: https://www.ups.com/track?loc=en_CA
+2️⃣ **사전 연락 불가:** 캐나다 UPS 기사님은 배송 중 고객님께 따로 전화를 드리지 않습니다.
+3️⃣ **부재 시 처리:** 벨을 눌러도 부재중일 경우 문 앞이나 컨시어지에 두고 가거나, 근처 픽업 스토어로 회수될 수 있습니다. 
+*(아파트에 컨시어지가 있다면 배송 예정일에 맞춰 미리 꼭 말씀해 두시길 권장해 드립니다.)*
+
+위 정보가 모두 맞다면 "정보 맞습니다" 라고 답장 남겨주세요. 확인 후 신속하게 발송하겠습니다. 감사합니다! 😊`;
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function searchAir() {
+            const val = document.getElementById('input-air').value.trim();
+            const resBox = document.getElementById('result-air');
+            const copyBtn = document.getElementById('btn-copy-air');
+            if(!val) return;
+
+            const items = val.split(',').map(item => item.trim());
+            let name = items[0] ? items[0] : "[이름]";
+            let loc = items[1] ? items[1] : "[지역]";
+
+            let template = "";
+
+            if(val.includes("초기") || items.length <= 3 && !val.includes("$") && !val.includes("원") && !val.includes("kg")) {
+                template = `안녕하세요 ${name} 고객님, 캐나다쉬핑 밴쿠버 본사입니다. 🍁
+${loc}에서 한국으로 보내시는 '타주 배송(아웃바운드)' 절차를 안내해 드립니다.
+
+📦 **[타주 배송 진행 과정]**
+1️⃣ **UPS 라벨 부착:** 저희가 발급해 드리는 UPS 운송장(라벨)을 출력하여 박스에 단단히 부착해 주세요.
+2️⃣ **UPS 스토어 접수:** 가까운 UPS 스토어에 화물을 맡겨주시면 밴쿠버 본사로 배송이 시작됩니다.
+3️⃣ **본사 입고 및 측정:** 화물이 밴쿠버 창고에 도착하면, 정확한 부피와 무게를 측정하여 최종 운송료를 안내해 드립니다.
+4️⃣ **결제 및 한국 발송:** 결제가 완료되면 한국으로 안전하게 항공 발송됩니다. ✈️
+
+대략적인 예상 견적은 아래 저희 홈페이지 요금표를 참고해 주시길 바랍니다.
+🔗 요금표 확인: https://www.coship.ca/courier-ca-to-kr
+
+진행을 원하시거나 더 궁금한 점이 있으시면 언제든 메시지 남겨주세요! 😊`;
+            } else {
+                let weight = items[2] ? items[2] : "[무게]";
+                let price = items[3] ? items[3] : "[금액]";
+
+                template = `안녕하세요 ${name} 고객님, 캐나다쉬핑 밴쿠버 본사입니다. 😊
+${loc}에서 발송하신 고객님의 소중한 화물이 저희 밴쿠버 창고에 안전하게 도착했습니다!
+
+입고된 화물의 실측 결과 및 결제 금액을 안내해 드립니다.
+
+📦 **[화물 측정 정보]**
+- 측정 무게/부피: ${weight}
+
+💳 **[결제 안내]**
+- 총 결제 금액: **${price}**
+
+아래 두 가지 방법 중 편하신 방법으로 결제 부탁드립니다.
+
+**[결제 방법]**
+1️⃣ **E-Transfer (이-트랜스퍼)**
+✉️ E-MAIL: exp@coship.ca
+💡 *주의: 입금 시 MEMO란에 반드시 '저희가 알려드린 BL번호를' 기재해 주시길 부탁드립니다.*
+
+2️⃣ **신용카드 (Credit Card)**
+💳 신용카드로 $100 이상 결제 시 3%의 수수료가 발생합니다. *(카드 결제를 원하실 경우 메시지 남겨주시면 결제 진행을 도와드리겠습니다.)*
+
+결제 완료 후 이 대화창에 메시지를 남겨주시면 신속하게 한국으로 발송을 진행하겠습니다. 감사합니다! 🍁`;
+            }
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function checkShipInfo() {
+            const val = document.getElementById('input-ship-check').value.trim();
+            const resBox = document.getElementById('result-ship-check');
+            const copyBtn = document.getElementById('btn-copy-ship-check');
+            if(!val) return;
+
+            const items = val.split(',').map(item => item.trim());
+            let lastName = items[0] ? items[0].toUpperCase() : "[Last Name]";
+            let firstName = items[1] ? items[1].toUpperCase() : "[First Name]";
+            let email = items[2] ? items[2] : "[이메일 주소]";
+
+            let template = `안녕하세요 고객님, 캐나다쉬핑입니다. 🚢
+선박 택배 세관 통관을 위한 [영문 성함 및 이메일] 최종 확인 부탁드립니다!
+
+👤 **1. 영문 성함 확인**
+성 (Last Name) : ${lastName}
+이름 (First Name) : ${firstName}
+
+🚨 **[중요]** 위 영문 성함은 고객님의 여권과 철자 및 띄어쓰기가 100% 일치해야 통관에 문제가 생기지 않습니다. (예: 이름에 띄어쓰기나 하이픈(-)이 있는지 꼭 확인해 주세요!)
+
+✉️ **2. 이메일 주소 확인**
+${email}
+
+위 정보에 오타나 수정할 부분이 없다면 "모두 맞습니다" 라고 답장 남겨주세요! 확인 후 다음 진행 도와드리겠습니다. 감사합니다. 😊`;
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function calculatePrice() {
+            const val = document.getElementById('input-price').value.trim();
+            const resBox = document.getElementById('result-price');
+            const copyBtn = document.getElementById('btn-copy-price');
+            if(!val) return;
+
+            const items = val.split(',').map(item => item.trim());
+            let name = items[0] ? items[0] : "[고객명]";
+            let spec = items[1] ? items[1] : "[실무게 / 부피무게]";
+            let price = items[2] ? items[2] : "[최종금액]";
+            let blNumber = items[3] ? items[3] : "";
+
+            let memoInstruction = "";
+            if (blNumber) {
+                memoInstruction = `💡 *주의: 입금 시 MEMO란에 반드시 '${blNumber}' 기재해 주시길 부탁드립니다.*`;
+            } else {
+                memoInstruction = `💡 *주의: 입금 시 MEMO란에 반드시 '접수하신 고객님의 성함'을 기재해 주시길 부탁드립니다.*`;
+            }
+
+            let template = `안녕하세요 ${name} 고객님, 캐나다쉬핑입니다. 😊
+고객님께서 맡겨주신 소중한 화물의 입고 및 측정이 완료되어 안내해 드립니다.
+
+📦 **[화물 측정 정보]**
+- 실무게 / 부피무게: ${spec}
+
+💳 **[결제 안내]**
+- 총 결제 금액: ${price}
+
+아래 두 가지 방법 중 편하신 방법으로 결제 부탁드립니다.
+
+**[결제 방법]**
+1️⃣ **E-Transfer (이-트랜스퍼)**
+✉️ E-MAIL: exp@coship.ca
+${memoInstruction}
+
+2️⃣ **신용카드 (Credit Card)**
+💳 신용카드로 $100 이상 결제 시 3%의 수수료가 발생합니다. *(카드 결제를 원하실 경우 카드번호 / 유효기간 / CVV번호를 알려주시면 감사하겠습니다.)*
+
+결제 완료 후 이 대화창에 메시지를 하나 남겨주시면 더욱 빠른 처리가 가능합니다. 
+진행하시면서 궁금한 점이 있으시면 언제든 문의해 주세요. 감사합니다! 🍁`;
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function generateTrackingInfo() {
+            const val = document.getElementById('input-tracking').value.trim();
+            const resBox = document.getElementById('result-tracking');
+            const copyBtn = document.getElementById('btn-copy-tracking');
+            if(!val) return;
+
+            const items = val.split(',').map(item => item.trim());
+            let sender = items[0] ? items[0] : "[송화인명]";
+            let receiver = items[1] ? items[1] : "[수취인명]";
+            let trackNum = items[2] ? items[2] : "[운송장번호]";
+
+            let template = `안녕하세요 ${sender} 고객님, 캐나다쉬핑입니다. 🍁
+
+고객님께서 ${receiver} 님께 보내시는 소중한 화물이 안전하게 배송 진행중 입니다. 📦✨
+배송 상태 및 이동 경로는 아래 링크를 통해 실시간으로 조회가 가능하십니다.
+
+🔍 **[실시간 배송 조회]**
+- 운송장 번호: **${trackNum}**
+- 실시간 조회 링크: https://www.coship.ca/ko/tracking
+
+화물이 수취인분께 안전하게 인도될 때까지 정성을 다하겠습니다. 이용해 주셔서 감사합니다. 😊`;
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function generatePaymentInfo() {
+            const val = document.getElementById('input-payment').value.trim().toLowerCase();
+            const resBox = document.getElementById('result-payment');
+            const copyBtn = document.getElementById('btn-copy-payment');
+            if(!val) return;
+
+            let template = "";
+
+            if (val.includes("일반")) {
+                template = `안녕하세요 고객님, 캐나다쉬핑입니다. 😊
+이용 대금 결제 방법에 대해 안내해 드립니다. 
+
+저희 캐나다쉬핑은 **현금, 이트랜스퍼(E-Transfer), 데빗카드(Debit Card), 신용카드**로 결제가 가능하십니다.
+*(⚠️ 단, 신용카드로 $100 이상 결제 시에는 3%의 카드 수수료가 함께 발생되오니 참고해 주시기 바랍니다.)*
+
+고객님께서 희망하시는 결제 방법을 편하게 말씀해 주시면 신속하게 진행을 도와드리겠습니다. 감사합니다! 🍁`;
+            } else if (val.includes("이트랜") || val.includes("etran")) {
+                template = `안녕하세요 고객님, 캐나다쉬핑입니다. 😊
+이트랜스퍼(E-Transfer) 결제 정보 및 유의사항을 안내해 드립니다.
+
+✉️ **이메일 주소:** exp@coship.ca
+
+💡 **[송금 시 유의사항]**
+입금 시 이트랜스퍼 **Message(메모)란에 반드시 '저희가 알려드린 BL번호를'** 기재해 주시길 부탁드립니다.
+
+확인 후 처리를 빠르게 도와드리겠습니다. 감사합니다! 🍁`;
+            } else if (val.includes("한국") || val.includes("계좌")) {
+                template = `안녕하세요 고객님, 캐나다쉬핑입니다. 😊
+원활한 통관 및 배송을 위한 한국 원화 계좌 이체 정보를 안내해 드립니다.
+
+🏦 **국내 입금 계좌 번호**
+- 은행명: **신한은행**
+- 계좌번호: **004-455-1000**
+- 예금주: **(주)캐나다쉬핑 에이전시**
+
+💡 **[송금 시 유의사항]**
+1️⃣ 입금자명은 반드시 접수해주신 **계약자 명의**로 입금을 부탁드립니다.
+2️⃣ 만약 타인 명의로 입금하시거나 여의치 않으실 경우, 입금 완료 후 이 대화창에 입금자명을 따로 알려주시기 바랍니다.
+3️⃣ 입금을 모두 마치신 후 메시지를 남겨주시면, 본사에서 확인을 마치는 대로 안전하게 배송을 전격 시작하도록 하겠습니다.
+
+감사합니다! 🍁`;
+            } else {
+                template = `키워드('일반', '이트랜', '한국계좌')를 명확하게 입력해 주세요.`;
+            }
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function generateShipStageInfo() {
+            const val = document.getElementById('input-ship-stage').value.trim();
+            const resBox = document.getElementById('result-ship-stage');
+            const copyBtn = document.getElementById('btn-copy-ship-stage');
+            if(!val) return;
+
+            const items = val.split(',').map(item => item.trim());
+            let name = items[0] ? items[0] : "[고객명]";
+            let stage = items[1] ? items[1] : "";
+
+            let template = "";
+
+            if (stage.includes("선적대기")) {
+                template = `안녕하세요 ${name} 고객님, 캐나다쉬핑입니다. 🍁
+
+고객님의 소중한 화물은 현재 컨테이너 **[선적 대기]** 중에 있습니다. 📦⚓
+
+향후 화물 선적이 안전하게 완료되고 배가 출항하게 되면, 접수때 적어주신 E-mail로 공식 출항 안내 메시지를 다시 한번 신속하게 발송해 드릴 예정입니다.
+
+조금만 더 시간 양해 후 기다려 주시면, 고객님의 소중한 화물을 목적지까지 안전하게 출항시키도록 최선을 다하겠습니다. 감사합니다. 😊`;
+            } else if (stage.includes("이동중")) {
+                template = `안녕하세요 ${name} 고객님, 캐나다쉬핑입니다. 🍁
+
+고객님의 소중한 화물은 현재 선박에 실려 **[한국으로 안전하게 이동 중]**에 있습니다. 🚢🌊
+
+조금만 더 기다려 주시면 한국 입항 일정에 맞춰 '도착 안내 이메일'을 곧 발송해 드릴 예정입니다. 해당 이메일 수신 후, 내용을 잘 읽어보시고 통관에 필요한 서류를 첨부해 주시면 신속하고 원활한 세관 통관을 철저히 진행하겠습니다.
+
+안전한 배송 완료 시까지 늘 정성을 다하겠습니다. 감사합니다! 😊`;
+            } else if (stage.includes("한국도착")) {
+                template = `안녕하세요 ${name} 고객님, 캐나다쉬핑입니다. 🍁
+
+고객님의 소중한 화물이 현재 **[한국에 무사히 도착하여 세관 통관 절차를 진행 중]**에 있습니다. 📦🛃
+
+세관 심사 및 통관 절차가 모두 정상적으로 마무리되고 고객님의 자택(도착지)으로 최종 국내 배송이 개시되는 시점에 맞추어 상세히 다시 안내 드릴 수 있도록 하겠습니다.
+
+마지막 순간까지 화물을 안전하게 인도해 드리겠습니다. 감사합니다. 😊`;
+            } else {
+                template = `상태 키워드('선적대기', '이동중', '한국도착')를 정확히 입력해 주세요.\n(예시 입력 포맷: 홍길동, 선적대기)`;
+            }
+
+            resBox.innerText = template;
+            resBox.style.display = "block";
+            copyBtn.style.display = "inline-block";
+        }
+
+        function copyText(targetId) {
+            const text = document.getElementById(targetId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("안내 문구가 성공적으로 클립보드에 복사되었습니다. 카카오톡에 붙여넣어(Ctrl+V) 전송하세요!");
+            }).catch(err => {
+                alert("복사 오류가 발생했습니다. 마우스 드래그 복사를 이용해 주세요.");
+            });
+        }
+    </script>
+</body>
+</html>
